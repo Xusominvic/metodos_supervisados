@@ -1,0 +1,54 @@
+# == 5. DISTRIBUCION DE VARIABLES (Train) =====================================
+from scipy.stats import gaussian_kde
+
+feature_cols_dist = [c for c in train_df.select_dtypes(include='number').columns
+                     if c != 'class']
+
+N_COLS = 5
+N_ROWS = math.ceil(len(feature_cols_dist) / N_COLS)
+
+fig, axes = plt.subplots(
+    N_ROWS, N_COLS,
+    figsize=(N_COLS * 4, N_ROWS * 3),
+    constrained_layout=True
+)
+axes_flat = axes.flatten()
+
+# Paleta por clase para comparar distribuciones
+palette = {0: '#4C72B0', 1: '#DD8452'}
+clases  = sorted(train_df['class'].dropna().unique())
+
+for ax, col in zip(axes_flat, feature_cols_dist):
+    for cls in clases:
+        datos = train_df.loc[train_df['class'] == cls, col].dropna()
+        color = palette.get(cls, 'grey')
+
+        # Histograma normalizado
+        ax.hist(datos, bins=30, color=color, alpha=0.35, density=True)
+
+        # Curva KDE
+        if len(datos) > 1 and datos.std() > 0:
+            kde   = gaussian_kde(datos, bw_method='scott')
+            x_rng = np.linspace(datos.min(), datos.max(), 200)
+            ax.plot(x_rng, kde(x_rng), color=color, linewidth=1.8,
+                    label=f'Clase {int(cls)}')
+
+    ax.set_title(col, fontsize=8, fontweight='bold', pad=4)
+    ax.set_xlabel('')
+    ax.set_ylabel('Densidad', fontsize=6)
+    ax.tick_params(labelsize=6)
+    ax.grid(axis='y', linestyle='--', alpha=0.4)
+
+# Leyenda global en la primera celda
+axes_flat[0].legend(fontsize=7, loc='upper right')
+
+# Ocultar ejes sobrantes
+for ax in axes_flat[len(feature_cols_dist):]:
+    ax.set_visible(False)
+
+fig.suptitle(
+    'Distribucion de Variables del Conjunto de Entrenamiento\n'
+    '(histograma + KDE por clase)',
+    fontsize=14, fontweight='bold', y=1.01
+)
+plt.show()
