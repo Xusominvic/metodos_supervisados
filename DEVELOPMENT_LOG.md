@@ -105,3 +105,21 @@
 - Obtención de una métrica clara sobre la dimensionalidad real intrínseca de los datos (mediante la curva de varianza acumulada).
 - Obtención de una intuición visual sobre la estructura de los datos y separabilidad de los grupos (clases).
 - Base preparada para una posible inclusión de PCA como paso de preprocesamiento dentro de pipelines predictivos en caso de que la alta dimensionalidad genere ruido o altos costes de computación.
+
+## [2026-06-16] - Optimización de Hiperparámetros con GridSearchCV y Estrategias Mixtas de Balanceo
+### Cambios:
+- Creación del script `grid_search_optimization.py` con 5 GridSearchCV independientes para Random Forest, Gradient Boosting, AdaBoost, SVM (RBF) y Bagging.
+- Implementación de estrategia mixta de balanceo:
+  - **class_weight='balanced'** para modelos que lo soportan nativamente (Random Forest, SVM, Bagging).
+  - **SMOTE** (Chawla et al., 2002) integrado en `imblearn.pipeline.Pipeline` para modelos secuenciales (Gradient Boosting, AdaBoost), garantizando que el sobremuestreo se aplica SOLO dentro de cada fold de CV (sin data leakage).
+- Configuración estándar: `cv=5` (StratifiedKFold), `scoring='accuracy'`, `n_jobs=-1`.
+
+### Lógica Detrás del Cambio:
+- La versión anterior del notebook (`modelos_supervisados.ipynb`) usaba parámetros por defecto y `sample_weight` manual para GradientBoosting. Esta evolución busca encontrar la configuración óptima de cada modelo mediante búsqueda exhaustiva en rejilla.
+- Se separa en un script `.py` para facilitar la ejecución desde el notebook y la reutilización del código.
+- El uso de `ImbPipeline` de imblearn (en vez del Pipeline de sklearn) es crítico: sklearn.Pipeline no soporta transformadores que modifiquen tanto X como y (como hace SMOTE).
+
+### Impacto Esperado:
+- Mejora significativa en el rendimiento de los modelos al explorar combinaciones de hiperparámetros.
+- Resultados reproducibles gracias a `random_state=42` en todos los componentes.
+- Base para la comparativa final de modelos y selección del mejor clasificador.
