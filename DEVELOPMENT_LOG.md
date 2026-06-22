@@ -123,3 +123,22 @@
 - Mejora significativa en el rendimiento de los modelos al explorar combinaciones de hiperparámetros.
 - Resultados reproducibles gracias a `random_state=42` en todos los componentes.
 - Base para la comparativa final de modelos y selección del mejor clasificador.
+
+## [2026-06-22] - v3: Optimización para Máxima Accuracy Global (sin balanceo artificial)
+### Cambios:
+- **Eliminado SMOTE** de todos los pipelines. Ya no se usa `imblearn.pipeline.Pipeline`, se vuelve a `sklearn.pipeline.Pipeline`.
+- **Eliminado `class_weight='balanced'`** de Random Forest, SVM y Bagging.
+- **Cambiada la métrica** de optimización de `f1_macro` a `accuracy`.
+- **Mantenido `SelectKBest(f_classif)`** como filtro de irrelevancia, con rango ampliado a `k ∈ [10, 15, 20, 25, 35, 45]`.
+- Añadido reporte de **desviación estándar** del score en CV para cada modelo.
+
+### Lógica Detrás del Cambio:
+- Los resultados de v2 mostraron F1-macro muy pobres (0.37–0.45) con overfitting extremo (brechas Train-CV de hasta +0.63).
+- **Causa raíz**: las estrategias de balanceo (SMOTE + class_weight) penalizaban la accuracy al sacrificar predicciones correctas en las clases 0 y 1 (99.4% de los datos) para intentar detectar la Clase 2 (0.6%).
+- El enunciado del trabajo exige **maximizar la accuracy global**, por lo que forzar la detección de la clase minoritaria era contraproducente.
+- Se mantiene `SelectKBest` porque en v2 demostró empíricamente que los modelos rendían mejor con 10-25 variables que con las 45 completas, lo que indica presencia de variables irrelevantes (no redundantes, que ya fueron eliminadas en el EDA).
+
+### Impacto Esperado:
+- Mejora significativa en accuracy al no distorsionar las fronteras de decisión con balanceo artificial.
+- Reducción del overfitting al eliminar las muestras sintéticas de SMOTE.
+- La Clase 2 probablemente será ignorada por los modelos, pero esto es consistente con maximizar accuracy global.
