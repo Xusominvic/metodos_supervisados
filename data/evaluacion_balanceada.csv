@@ -1,0 +1,6 @@
+Modelo;Mejores Hiperparámetros;Train Accuracy;CV Accuracy;CV Balanced Accuracy;CV Macro F1;Recall Clase 0;Recall Clase 1;Recall Clase 2 (Minoritaria);CV Desviacion Estandar;Brecha Overfitting
+Random Forest;{'classifier__max_depth': 10, 'classifier__max_features': 'sqrt', 'classifier__n_estimators': 300, 'feature_selection__k': 15};0.958;0.721;0.4072;0.4095;0.9112;0.3105;0.0;0.0158;0.237
+Gradient Boosting;{'classifier__learning_rate': 0.1, 'classifier__max_depth': 4, 'classifier__n_estimators': 200, 'feature_selection__k': 35};0.9803;0.745;0.4908;0.4973;0.8966;0.418;0.1579;0.0351;0.2353
+AdaBoost;{'classifier__learning_rate': 1.0, 'classifier__n_estimators': 200, 'feature_selection__k': 45};0.6787;0.6667;0.407;0.4237;0.8102;0.3583;0.0526;0.0386;0.012
+SVM (RBF);{'classifier__C': 1, 'classifier__gamma': 0.01, 'feature_selection__k': 15};0.6927;0.6513;0.4884;0.4404;0.6976;0.557;0.2105;0.093;0.0413
+Bagging;{'classifier__max_samples': 1.0, 'classifier__n_estimators': 200, 'feature_selection__k': 15};1.0;0.7073;0.3828;0.3762;0.9345;0.2139;0.0;0.0136;0.2927

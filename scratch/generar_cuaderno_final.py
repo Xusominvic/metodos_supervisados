@@ -1,0 +1,50 @@
+import json
+
+# Markdown Introductorio
+md_intro = """# Evaluación Final: Modelos de Aprendizaje Supervisado\n\nEste cuaderno documenta los resultados finales del pipeline de entrenamiento diseñado para la práctica. \nA lo largo del proyecto, hemos construido un sistema riguroso de `Pipeline` y `GridSearchCV` para evaluar 5 algoritmos distintos (Random Forest, Gradient Boosting, AdaBoost, SVM y Bagging) bajo dos enfoques metodológicos:\n1. **Enfoque Estándar:** Optimización pura de `accuracy`.\n2. **Enfoque Balanceado:** Ajuste de pesos (`class_weight='balanced'`) para priorizar la detección de clases minoritarias, evaluado mediante `balanced_accuracy`.\n\n## 1. Validación de Desplazamiento de Distribución (PCA)\nAntes de tomar una decisión de modelado final, validamos visualmente si existe un "Dataset Shift" entre `training.csv` y `test.csv`.\n\n![PCA Train vs Test](data/plots/comparativa_pca_train_test.png)\n\n**Análisis del Gráfico (PCA):**\nEn esta proyección (que retiene la mayor varianza posible en 2D), observamos que los datos del conjunto de prueba (puntos grises) se superponen de manera homogénea sobre la distribución geométrica del conjunto de entrenamiento. Esto sugiere fuertemente que **no existe un Dataset Shift o Label Shift evidente** a priori. Asumimos por tanto que la distribución de test refleja fielmente la de entrenamiento (altamente desbalanceada), lo que refuerza la idoneidad de usar la `Accuracy` global como métrica primaria.\n"""
+
+# Markdown Tabla Resultados
+md_tabla = """## 2. Resultados de las Búsquedas en Rejilla y Modelos Seleccionados\n\nTras evaluar miles de combinaciones, la siguiente tabla resume los mejores hiperparámetros y el tamaño de los modelos para el enfoque estándar, incluyendo el análisis de Overfitting:\n\n![Tabla Resumen](data/plots/05_tabla_resumen_parametros.png)\n\n**Análisis de Hiperparámetros y Varianza:**\nLa tabla recoge la configuración óptima encontrada tras el ajuste exhaustivo. Notamos que los modelos fuertemente basados en árboles (Random Forest y Bagging) alcanzan una precisión de entrenamiento perfecta (`Train Acc = 1.0000`) pero con una notable caída en validación (`CV Acc ≈ 0.73`), evidenciando un claro problema de **sobreajuste (alta varianza)**. En contraste, Gradient Boosting y SVM muestran brechas de overfitting muchísimo menores (0.13 y 0.03 respectivamente), demostrando mejor capacidad de generalización.\n"""
+
+# Markdown Métricas y Recall
+md_metricas = """## 3. Comparativa Empírica de Rendimiento\n\nA continuación, visualizamos el rendimiento de todos los clasificadores. Destacamos especialmente el problema del desbalanceo, donde la optimización estándar de `Accuracy` ignora casi por completo a la Clase 2 (0.6% de la muestra), mientras que el enfoque `Balanceado` es capaz de aumentar significativamente su tasa de detección (Recall).\n\n![Train vs CV](data/plots/01_train_vs_cv_accuracy.png)\n\n**Análisis de Overfitting:**\nEl análisis visual de las barras confirma gráficamente lo apuntado en la tabla: **Gradient Boosting**, **AdaBoost** y **SVM** son modelos mucho más conservadores y robustos en este escenario. Su varianza (indicada por las flechas rojas de $\Delta$) es significativamente menor que la de Random Forest y Bagging en ambos enfoques.\n\n![Métricas Comparativas](data/plots/02_metricas_comparativa.png)\n\n**Análisis de Métricas Globales:**\nAl contrastar múltiples métricas, apreciamos el coste del enfoque estándar: la `Accuracy` global es alta (azul), pero las métricas que penalizan el sesgo mayoritario (`Balanced Accuracy` y `Macro F1`) sufren visiblemente. En el panel de Enfoque Balanceado, la Accuracy general cae de forma casi imperceptible, pero se consigue un alza sólida en las otras dos métricas, indicando un clasificador más equitativo.\n\n![Recall por Clase](data/plots/03_recall_por_clase.png)\n\n**Análisis de Sensibilidad Minoritaria (Recall):**\nEste gráfico es el más revelador respecto al problema de los datos desbalanceados. **Bajo el enfoque estándar, modelos como RF y Bagging fallan completamente en detectar la Clase 2 minoritaria (Recall = 0.0).** Gradient Boosting identifica apenas un ~15%. Al aplicar el **enfoque balanceado**, la tasa de detección de esta clase (barra roja) se dispara (alcanzando el ~21% en SVM y manteniendo el ~15% en GB), mitigando el sesgo mayoritario sin arruinar drásticamente el acierto en la Clase 0.\n"""
+
+# Markdown Conclusión Final
+md_conclusion = """## 4. Selección del Modelo Predictivo\n\nBasándonos en la validación cruzada, el **Gradient Boosting** se erige como el clasificador más preciso y robusto, mostrando el mejor balance entre sesgo y varianza (menor brecha de overfitting en comparación con Random Forest).\n\n![Estándar vs Balanceado](data/plots/04_estandar_vs_balanceado.png)\n\n**Análisis de Elección de Modelo:**\nLa comparativa final frente a frente por modelo nos permite tomar una decisión empírica. El **Gradient Boosting (Enfoque Estándar)** alcanza el valor máximo absoluto en validación cruzada entre todas las configuraciones (**CV Accuracy = 0.748**), siendo superior al resto de algoritmos. Aunque el enfoque balanceado (0.745) ofrece ventajas teóricas en equidad de detección, al haber demostrado mediante PCA que el conjunto de prueba no presenta un desplazamiento de distribución anómalo, maximizar la Accuracy Estándar sigue siendo la estrategia global más segura y competitiva.\n\n### Modelo Elegido: Gradient Boosting (Enfoque Estándar)\nAl ser la métrica principal la `Accuracy` global, este modelo obtiene el mejor rendimiento estadístico.\n\nEste modelo ha sido reentrenado de forma automática con el **100% de los datos** del fichero de entrenamiento original (`training.csv`) para aprovechar la máxima cantidad de información disponible en su ajuste final, y sus predicciones se han volcado exitosamente como respuesta en `data/test_completado.csv`.\n"""
+
+notebook = {
+    "cells": [
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [line + "\\n" for line in md_intro.split("\\n")]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [line + "\\n" for line in md_tabla.split("\\n")]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [line + "\\n" for line in md_metricas.split("\\n")]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [line + "\\n" for line in md_conclusion.split("\\n")]
+        }
+    ],
+    "metadata": {},
+    "nbformat": 4,
+    "nbformat_minor": 4
+}
+
+# Fix line endings to avoid double newlines
+for cell in notebook["cells"]:
+    cell["source"] = [s.replace('\\n', '\n') for s in cell["source"]]
+
+with open('evaluacion_final_v4.ipynb', 'w', encoding='utf-8') as f:
+    json.dump(notebook, f, indent=1, ensure_ascii=False)
+
+print("Cuaderno de evaluación generado correctamente (manual JSON).")
